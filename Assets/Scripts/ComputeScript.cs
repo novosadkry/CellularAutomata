@@ -15,6 +15,11 @@ public class ComputeScript : MonoBehaviour
     private ComputeBuffer _cellsIn;
     private ComputeBuffer _cellsOut;
 
+    private void Awake()
+    {
+        grid.Scale = textureScale;
+    }
+
     private void Start()
     {
         if (_renderTexture == null)
@@ -43,10 +48,12 @@ public class ComputeScript : MonoBehaviour
         UpdateBuffer(ref _cellsIn, grid.Cells);
         UpdateBuffer(ref _cellsOut, grid.Cells);
         
+        var cellScale = grid.GetCellScale();
+        
         computeShader.SetTexture(0, "Result", _renderTexture);
         computeShader.SetBuffer(0, "CellsIn", _cellsIn);
         computeShader.SetBuffer(0, "CellsOut", _cellsOut);
-        computeShader.SetFloats("cell_scale", (float) textureScale.x / grid.Size.x, (float) textureScale.y / grid.Size.y);
+        computeShader.SetFloats("cell_scale", cellScale.x, cellScale.y);
         computeShader.SetInts("grid_size", grid.Size.x, grid.Size.y);
         computeShader.SetBool("compute", true);
         
@@ -59,11 +66,13 @@ public class ComputeScript : MonoBehaviour
     {
         UpdateBuffer(ref _cellsIn, grid.Cells);
         UpdateBuffer(ref _cellsOut, grid.Cells);
+
+        var cellScale = grid.GetCellScale();
         
         computeShader.SetTexture(0, "Result", _renderTexture);
         computeShader.SetBuffer(0, "CellsIn", _cellsIn);
         computeShader.SetBuffer(0, "CellsOut", _cellsOut);
-        computeShader.SetFloats("cell_scale", (float) textureScale.x / grid.Size.x, (float) textureScale.y / grid.Size.y);
+        computeShader.SetFloats("cell_scale", cellScale.x, cellScale.y);
         computeShader.SetInts("grid_size", grid.Size.x, grid.Size.y);
         computeShader.SetBool("compute", false);
         

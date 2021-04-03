@@ -53,8 +53,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 {
     uint2 coord;
     
-    coord.x = floor(id.x / cell_scale.x);
-    coord.y = floor(id.y / cell_scale.y);
+    coord.y = floor(id.x / cell_scale.x);
+    coord.x = floor(id.y / cell_scale.y);
 
     const uint index = get_index_from_coord(coord);
     float4 color = float4(0.0, 0.0, 0.0, 1.0);
@@ -89,5 +89,5 @@ void CSMain (uint3 id : SV_DispatchThreadID)
             color.xyz = float3(1.0, 1.0, 1.0);
     }
     
-    Result[id.yx] = color;
+    Result[id.xy] = color;
 }

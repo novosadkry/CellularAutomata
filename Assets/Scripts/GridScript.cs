@@ -7,8 +7,9 @@ public class GridScript : MonoBehaviour
     public event Action OnInputUpdate;
     
     [field: Header("Dimensions")]
-    [field: SerializeField]
-    public Vector2Int Size { get; set; }
+    [field: SerializeField] public Vector2Int Size { get; set; }
+    [field: SerializeField] public Vector2Int Scale { get; set; }
+    
     public uint[,] Cells { get; set; }
 
     [Header("Settings")] 
@@ -101,9 +102,22 @@ public class GridScript : MonoBehaviour
 
     private Vector2Int GetCellFromMousePos()
     {
-        int x = Mathf.FloorToInt(Input.mousePosition.x / _cam.pixelWidth * Size.x);
-        int y = Mathf.FloorToInt(Input.mousePosition.y / _cam.pixelHeight * Size.y);
+        float xRatio = (float) _cam.pixelWidth / Scale.x;
+        float yRatio = (float) _cam.pixelHeight / Scale.y;
+        
+        var cellScale = GetCellScale();
+        
+        int x = Mathf.FloorToInt(Input.mousePosition.x / (cellScale.x * xRatio));
+        int y = Mathf.FloorToInt(Input.mousePosition.y / (cellScale.y * yRatio));
 
         return new Vector2Int(x, y);
+    }
+
+    public Vector2 GetCellScale()
+    {
+        float x = (float) Scale.x / Size.x;
+        float y = (float) Scale.y / Size.y;
+
+        return new Vector2(x, y);
     }
 }
