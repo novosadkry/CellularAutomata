@@ -35,7 +35,8 @@ public class GridScript : MonoBehaviour
 
     private void Update()
     {
-        editRadius += Mathf.RoundToInt(Input.mouseScrollDelta.y);
+        if (!Input.GetKey(KeyCode.LeftControl))
+            editRadius += Mathf.RoundToInt(Input.mouseScrollDelta.y);
         
         if (Input.GetKeyDown(KeyCode.Space))
             gameClock.paused = !gameClock.paused;
@@ -43,6 +44,9 @@ public class GridScript : MonoBehaviour
 
     private void OnInputTick()
     {
+        if (Input.GetKey(KeyCode.LeftControl))
+            return;
+        
         if (Input.GetMouseButton(0))
         {
             var cell = GetCellFromMousePos();
