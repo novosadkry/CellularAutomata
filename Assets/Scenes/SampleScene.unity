@@ -254,7 +254,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tickDelta: 0.01
-  paused: 0
+  paused: 1
 --- !u!114 &1547239228
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -281,8 +281,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 464011d59bfc414381618908a4592ba4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <Size>k__BackingField: {x: 20, y: 50}
-  editRadius: 1
+  <Size>k__BackingField: {x: 1600, y: 900}
+  <Scale>k__BackingField: {x: 0, y: 0}
+  editRadius: 0
   inputClock: {fileID: 1547239228}
   gameClock: {fileID: 1547239227}
 --- !u!4 &1547239230

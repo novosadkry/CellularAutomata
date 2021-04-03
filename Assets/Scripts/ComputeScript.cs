@@ -22,11 +22,15 @@ public class ComputeScript : MonoBehaviour
 
     private void Start()
     {
-        if (_renderTexture == null)
-            CreateTexture();
+        CreateTexture();
+        
+        UpdateBuffer(ref _cellsIn, grid.Cells);
+        UpdateBuffer(ref _cellsOut, grid.Cells);
 
         grid.OnGameUpdate += OnGameUpdate;
         grid.OnInputUpdate += OnInputUpdate;
+        
+        OnInputUpdate();
     }
 
     private void CreateTexture()
