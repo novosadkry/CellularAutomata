@@ -1,0 +1,93 @@
+#pragma kernel CSMain
+
+float2 cell_scale;
+uint2 grid_size;
+bool compute;
+
+RWStructuredBuffer<uint> CellsIn;
+RWStructuredBuffer<uint> CellsOut;
+RWTexture2D<float4> Result;
+
+uint2 get_coord_from_index(uint index)
+{
+    uint2 coord;
+    coord.x = index % grid_size.y;
+    coord.y = index / grid_size.y;
+
+    return coord;
+}
+
+uint get_index_from_coord(uint2 coord)
+{
+    return coord.y * grid_size.x + coord.x;
+}
+
+int count_neighbours(uint index)
+{
+    int count = 0;
+    
+    for (int x = -1; x <= 1; x++)
+    {
+        for (int y = -1; y <= 1; y++)
+        {
+            if (x == 0 && y == 0)
+                continue;
+
+            uint2 coord = get_coord_from_index(index);
+            coord.x += x;
+            coord.y += y;
+
+            if (coord.x < 0 || coord.x >= grid_size.x) continue;
+            if (coord.y < 0 || coord.y >= grid_size.y) continue;
+
+            if (CellsIn[get_index_from_coord(coord)])
+                count++;
+        }
+    }
+
+    return count;
+}
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    uint2 coord;
+    
+    coord.x = floor(id.x / cell_scale.x);
+    coord.y = floor(id.y / cell_scale.y);
+
+    const uint index = get_index_from_coord(coord);
+    float4 color = float4(0.0, 0.0, 0.0, 1.0);
+    
+    if (compute)
+    {
+        if (CellsIn[index])
+        {
+            int n = count_neighbours(index);
+            
+            if (n < 2)
+                CellsOut[index] = 0;
+            else if (n > 3)
+                CellsOut[index] = 0;
+        }
+
+        else
+        {
+            int n = count_neighbours(index);
+
+            if (n == 3)
+                CellsOut[index] = 1;
+        }
+        
+        if (CellsOut[index])
+            color.xyz = float3(1.0, 1.0, 1.0);
+    }
+
+    else
+    {
+        if (CellsIn[index])
+            color.xyz = float3(1.0, 1.0, 1.0);
+    }
+    
+    Result[id.yx] = color;
+}
