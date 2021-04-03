@@ -4,9 +4,12 @@ using UnityEngine;
 [RequireComponent(typeof(Camera))]
 public class ComputeScript : MonoBehaviour
 {
-    [Header("Properties")]
     public GridScript grid;
     
+    [Header("Properties")]
+    public float zoom = 1;
+    public Vector2 offset;
+
     [Header("Shader Settings")]
     public ComputeShader computeShader;
     public Vector2Int textureScale;
@@ -22,7 +25,7 @@ public class ComputeScript : MonoBehaviour
 
     private void Start()
     {
-        CreateTexture();
+        UpdateTexture();
         
         UpdateBuffer(ref _cellsIn, grid.Cells);
         UpdateBuffer(ref _cellsOut, grid.Cells);
@@ -33,8 +36,17 @@ public class ComputeScript : MonoBehaviour
         OnInputUpdate();
     }
 
-    private void CreateTexture()
+    private void OnValidate()
     {
+        grid.editZoom = zoom;
+        grid.editOffset = offset;
+    }
+
+    private void UpdateTexture()
+    {
+        if (_renderTexture != null)
+            _renderTexture.Release();
+        
         _renderTexture = new RenderTexture(textureScale.x, textureScale.y, 0);
         _renderTexture.enableRandomWrite = true;
         _renderTexture.Create();
@@ -85,7 +97,7 @@ public class ComputeScript : MonoBehaviour
 
     private void OnRenderImage(RenderTexture src, RenderTexture dest)
     {
-        Graphics.Blit(_renderTexture, dest);
+        Graphics.Blit(_renderTexture, dest, new Vector2(zoom, zoom), offset);
     }
 
     private void OnDestroy()

@@ -220,8 +220,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   grid: {fileID: 1547239229}
+  zoom: 1
+  offset: {x: 0, y: 0}
   computeShader: {fileID: 7200000, guid: bf76c378a7cab36479987e3d34250b2c, type: 3}
-  textureScale: {x: 2048, y: 2048}
+  textureScale: {x: 8192, y: 8192}
 --- !u!1 &1547239226
 GameObject:
   m_ObjectHideFlags: 0
@@ -254,7 +256,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tickDelta: 0.01
-  paused: 1
+  paused: 0
 --- !u!114 &1547239228
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -281,9 +283,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 464011d59bfc414381618908a4592ba4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <Size>k__BackingField: {x: 1600, y: 900}
+  <Size>k__BackingField: {x: 800, y: 600}
   <Scale>k__BackingField: {x: 0, y: 0}
   editRadius: 0
+  editZoom: 1
+  editOffset: {x: 0, y: 0}
   inputClock: {fileID: 1547239228}
   gameClock: {fileID: 1547239227}
 --- !u!4 &1547239230

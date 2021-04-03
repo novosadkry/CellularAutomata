@@ -14,6 +14,8 @@ public class GridScript : MonoBehaviour
 
     [Header("Settings")] 
     public int editRadius;
+    public float editZoom;
+    public Vector2 editOffset;
     
     [Header("Timings")]
     public ClockScript inputClock;
@@ -63,12 +65,6 @@ public class GridScript : MonoBehaviour
         OnGameUpdate?.Invoke();
     }
 
-    private void OnValidate()
-    {
-        Initialize();
-        OnInputUpdate?.Invoke();
-    }
-
     private void Initialize()
     {
         Cells = new uint[Size.x, Size.y];
@@ -102,13 +98,16 @@ public class GridScript : MonoBehaviour
 
     private Vector2Int GetCellFromMousePos()
     {
-        float xRatio = (float) _cam.pixelWidth / Scale.x;
-        float yRatio = (float) _cam.pixelHeight / Scale.y;
+        float xRatio = (float) _cam.pixelWidth / Scale.x / editZoom;
+        float yRatio = (float) _cam.pixelHeight / Scale.y / editZoom;
         
         var cellScale = GetCellScale();
+
+        var offsetX = editOffset.x * _cam.pixelWidth / editZoom;
+        var offsetY = editOffset.y * _cam.pixelHeight / editZoom;
         
-        int x = Mathf.FloorToInt(Input.mousePosition.x / (cellScale.x * xRatio));
-        int y = Mathf.FloorToInt(Input.mousePosition.y / (cellScale.y * yRatio));
+        int x = Mathf.FloorToInt((Input.mousePosition.x + offsetX) / (cellScale.x * xRatio));
+        int y = Mathf.FloorToInt((Input.mousePosition.y + offsetY) / (cellScale.y * yRatio));
 
         return new Vector2Int(x, y);
     }
