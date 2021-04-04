@@ -36,7 +36,10 @@ public class GridScript : MonoBehaviour
     private void Update()
     {
         if (!Input.GetKey(KeyCode.LeftControl))
+        {
             editRadius += Mathf.RoundToInt(Input.mouseScrollDelta.y);
+            editRadius = Mathf.Max(editRadius, 0);
+        }
         
         if (Input.GetKeyDown(KeyCode.Space))
             gameClock.paused = !gameClock.paused;
