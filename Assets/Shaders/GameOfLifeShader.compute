@@ -93,10 +93,17 @@ void InputUpdate(uint3 id : SV_DispatchThreadID)
     const uint index = get_index_from_coord(coord);
     float4 color = float4(0.0, 0.0, 0.0, 1.0);
 
-    const float dist = abs((coord.x - fill_pos.x) * (coord.y - fill_pos.y));
+    // Distance from square
+    const float dx = abs(int(coord.x - fill_pos.x));
+    const float dy = abs(int(coord.y - fill_pos.y));
+    const float dist = max(dx, dy);
+
     const int le_radius = 1.0 - max(sign(dist - fill_radius), 0.0);
 
-    const int val = max(le_radius * fill, CellsIn[index]);
+    const int val =
+        max(le_radius * fill, CellsIn[index]) * fill +
+        CellsIn[index] * (1.0 - le_radius) * (1.0 - fill);
+
     color.xyz = float3(1.0, 1.0, 1.0) * val;
 
     CellsOut[index] = val;
