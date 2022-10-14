@@ -2,10 +2,10 @@
 
 float2 cell_scale;
 uint2 grid_size;
-bool compute;
 
 RWStructuredBuffer<uint> CellsIn;
 RWStructuredBuffer<uint> CellsOut;
+RWStructuredBuffer<uint> CellsSwap;
 RWTexture2D<float4> Result;
 
 uint2 get_coord_from_index(uint index)
@@ -40,8 +40,7 @@ int count_neighbours(uint index)
             if (coord.x < 0 || coord.x >= grid_size.x) continue;
             if (coord.y < 0 || coord.y >= grid_size.y) continue;
 
-            if (CellsIn[get_index_from_coord(coord)])
-                count++;
+            count += CellsIn[get_index_from_coord(coord)];
         }
     }
 
@@ -58,36 +57,22 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
     const uint index = get_index_from_coord(coord);
     float4 color = float4(0.0, 0.0, 0.0, 1.0);
-    
-    if (compute)
-    {
-        if (CellsIn[index])
-        {
-            int n = count_neighbours(index);
-            
-            if (n < 2)
-                CellsOut[index] = 0;
-            else if (n > 3)
-                CellsOut[index] = 0;
-        }
 
-        else
-        {
-            int n = count_neighbours(index);
+    const int n = count_neighbours(index);
 
-            if (n == 3)
-                CellsOut[index] = 1;
-        }
-        
-        if (CellsOut[index])
-            color.xyz = float3(1.0, 1.0, 1.0);
-    }
+    const int ge2_le3 =
+        (1.0 - max(sign(2 - n), 0.0)) *
+        (1.0 - max(sign(n - 3), 0.0)) *
+        CellsIn[index];
 
-    else
-    {
-        if (CellsIn[index])
-            color.xyz = float3(1.0, 1.0, 1.0);
-    }
-    
+    const int eq_3 =
+        1.0 - abs(sign(n - 3));
+
+    const int val = min(ge2_le3 + eq_3, 1.0);
+    color.xyz = float3(1.0, 1.0, 1.0) * val;
+
+    CellsOut[index] = val;
+    CellsSwap[index] = val;
+
     Result[id.xy] = color;
 }

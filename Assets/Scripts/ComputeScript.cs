@@ -20,6 +20,7 @@ public class ComputeScript : MonoBehaviour
     private RenderTexture _renderTexture;
     private ComputeBuffer _cellsIn;
     private ComputeBuffer _cellsOut;
+    private ComputeBuffer _cellsSwap;
 
     private void Awake()
     {
@@ -30,8 +31,17 @@ public class ComputeScript : MonoBehaviour
     {
         UpdateTexture();
 
-        UpdateBuffer(ref _cellsIn, grid.Cells);
-        UpdateBuffer(ref _cellsOut, grid.Cells);
+        _cellsIn = new ComputeBuffer(grid.Cells.Length, 4);
+        _cellsOut = new ComputeBuffer(grid.Cells.Length, 4);
+        _cellsSwap = new ComputeBuffer(grid.Cells.Length, 4);
+
+        var cellScale = grid.GetCellScale();
+        computeShader.SetTexture(0, "Result", _renderTexture);
+        computeShader.SetBuffer(0, "CellsIn", _cellsIn);
+        computeShader.SetBuffer(0, "CellsOut", _cellsOut);
+        computeShader.SetBuffer(0, "CellsSwap", _cellsSwap);
+        computeShader.SetFloats("cell_scale", cellScale.x, cellScale.y);
+        computeShader.SetInts("grid_size", grid.Size.x, grid.Size.y);
 
         grid.OnGameUpdate += OnGameUpdate;
         grid.OnInputUpdate += OnInputUpdate;
@@ -101,47 +111,20 @@ public class ComputeScript : MonoBehaviour
         _renderTexture.Create();
     }
 
-    private void UpdateBuffer(ref ComputeBuffer buffer, Array data)
-    {
-        buffer?.Release();
-        buffer = new ComputeBuffer(grid.Cells.Length, 4);
-        buffer.SetData(data);
-    }
-
     private void OnGameUpdate()
     {
-        UpdateBuffer(ref _cellsIn, grid.Cells);
-        UpdateBuffer(ref _cellsOut, grid.Cells);
-
-        var cellScale = grid.GetCellScale();
-
-        computeShader.SetTexture(0, "Result", _renderTexture);
-        computeShader.SetBuffer(0, "CellsIn", _cellsIn);
-        computeShader.SetBuffer(0, "CellsOut", _cellsOut);
-        computeShader.SetFloats("cell_scale", cellScale.x, cellScale.y);
-        computeShader.SetInts("grid_size", grid.Size.x, grid.Size.y);
-        computeShader.SetBool("compute", true);
-
         computeShader.Dispatch(0, _renderTexture.width / 8, _renderTexture.height / 8, 1);
 
-        _cellsOut.GetData(grid.Cells);
+        // Swap buffers
+        (_cellsIn, _cellsOut, _cellsSwap) = (_cellsOut, _cellsSwap, _cellsIn);
+        computeShader.SetBuffer(0, "CellsIn", _cellsIn);
+        computeShader.SetBuffer(0, "CellsOut", _cellsOut);
+        computeShader.SetBuffer(0, "CellsSwap", _cellsSwap);
     }
 
     private void OnInputUpdate()
     {
-        UpdateBuffer(ref _cellsIn, grid.Cells);
-        UpdateBuffer(ref _cellsOut, grid.Cells);
-
-        var cellScale = grid.GetCellScale();
-
-        computeShader.SetTexture(0, "Result", _renderTexture);
-        computeShader.SetBuffer(0, "CellsIn", _cellsIn);
-        computeShader.SetBuffer(0, "CellsOut", _cellsOut);
-        computeShader.SetFloats("cell_scale", cellScale.x, cellScale.y);
-        computeShader.SetInts("grid_size", grid.Size.x, grid.Size.y);
-        computeShader.SetBool("compute", false);
-
-        computeShader.Dispatch(0, _renderTexture.width / 8, _renderTexture.height / 8, 1);
+        _cellsIn.SetData(grid.Cells);
     }
 
     private void OnRenderImage(RenderTexture src, RenderTexture dest)
@@ -153,5 +136,6 @@ public class ComputeScript : MonoBehaviour
     {
         _cellsIn.Release();
         _cellsOut.Release();
+        _cellsSwap.Release();
     }
 }
