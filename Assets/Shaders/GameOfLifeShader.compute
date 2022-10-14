@@ -1,7 +1,12 @@
-#pragma kernel CSMain
+#pragma kernel GameUpdate
+#pragma kernel InputUpdate
 
 float2 cell_scale;
 uint2 grid_size;
+
+bool fill;
+uint2 fill_pos;
+float fill_radius;
 
 RWStructuredBuffer<uint> CellsIn;
 RWStructuredBuffer<uint> CellsOut;
@@ -47,8 +52,8 @@ int count_neighbours(uint index)
     return count;
 }
 
-[numthreads(8,8,1)]
-void CSMain (uint3 id : SV_DispatchThreadID)
+[numthreads(16,16,1)]
+void GameUpdate(uint3 id : SV_DispatchThreadID)
 {
     uint2 coord;
     
@@ -69,6 +74,29 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         1.0 - abs(sign(n - 3));
 
     const int val = min(ge2_le3 + eq_3, 1.0);
+    color.xyz = float3(1.0, 1.0, 1.0) * val;
+
+    CellsOut[index] = val;
+    CellsSwap[index] = val;
+
+    Result[id.xy] = color;
+}
+
+[numthreads(16,16,1)]
+void InputUpdate(uint3 id : SV_DispatchThreadID)
+{
+    uint2 coord;
+
+    coord.x = floor(id.x / cell_scale.x);
+    coord.y = floor(id.y / cell_scale.y);
+
+    const uint index = get_index_from_coord(coord);
+    float4 color = float4(0.0, 0.0, 0.0, 1.0);
+
+    const float dist = abs((coord.x - fill_pos.x) * (coord.y - fill_pos.y));
+    const int le_radius = 1.0 - max(sign(dist - fill_radius), 0.0);
+
+    const int val = max(le_radius * fill, CellsIn[index]);
     color.xyz = float3(1.0, 1.0, 1.0) * val;
 
     CellsOut[index] = val;
